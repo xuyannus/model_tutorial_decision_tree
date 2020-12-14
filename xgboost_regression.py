@@ -1,9 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from sklearn.ensemble import RandomForestRegressor
 import sklearn.model_selection as xval
 from sklearn.datasets import fetch_openml
-import forestci as fci
+import xgboost as xgb
 from sklearn.metrics import r2_score
 
 
@@ -26,23 +25,14 @@ def load_data():
 
 def demo():
     mpg_X_train, mpg_X_test, mpg_y_train, mpg_y_test = load_data()
-    mpg_forest = RandomForestRegressor(n_estimators=100, random_state=42)
-    mpg_forest.fit(mpg_X_train, mpg_y_train)
-    mpg_y_hat = mpg_forest.predict(mpg_X_test)
+    hyper_params = {'objective': 'reg:squarederror', 'n_estimators': 200, 'max_depth': 20, 'learning_rate': 0.1, 'reg_lambda': 1}
+    xg_reg = xgb.XGBRegressor(**hyper_params)
 
+    xg_reg.fit(mpg_X_train, mpg_y_train)
+    mpg_y_hat = xg_reg.predict(mpg_X_test)
     print({
         "R2": r2_score(mpg_y_test, mpg_y_hat)
     })
-
-    # Calculate the variance
-    # mpg_V_IJ_unbiased = fci.random_forest_error(mpg_forest, mpg_X_train, mpg_X_test)
-    #
-    # # Plot error bars for predicted MPG using unbiased variance
-    # plt.errorbar(mpg_y_test, mpg_y_hat, yerr=np.sqrt(mpg_V_IJ_unbiased), fmt='o')
-    # plt.plot([5, 45], [5, 45], 'k--')
-    # plt.xlabel('Reported MPG')
-    # plt.ylabel('Predicted MPG')
-    # plt.show()
 
 
 # start the demo
